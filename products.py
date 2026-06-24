@@ -40,6 +40,8 @@ class Product:
         self.price = price
         self.quantity = quantity
         self.active = True
+        if self.quantity == 0:
+            self.deactivate()
 
     def get_quantity(self):
         """
@@ -61,7 +63,7 @@ class Product:
         else:
             self.quantity = quantity
             if self.quantity == 0:
-                self.active = False
+                self.deactivate()
 
     def is_active(self):
         """
@@ -104,8 +106,8 @@ class Product:
             If the quantity of the product after buying is going to be negative.
         """
 
-        if quantity < 0:
-            raise ValueError("The quantity should be a positiv amount.")
+        if quantity <= 0:
+            raise ValueError("The quantity should be a positive amount.")
         if not self.active:
             raise ValueError("The product is not available.")
         purchase_price = quantity * self.price
