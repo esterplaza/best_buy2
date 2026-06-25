@@ -45,10 +45,7 @@ class Store:
         """
         Returns how many items are in the store in total.
         """
-        total_quantity = 0
-        for product in self.list_of_products:
-            total_quantity += product.get_quantity()
-        return total_quantity
+        return sum(product.get_quantity() for product in self.list_of_products if product.is_active())
 
     def get_all_products(self):
         """
