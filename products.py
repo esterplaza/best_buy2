@@ -10,6 +10,8 @@ class Product:
         the price of the product
     quantity : int
         the number of available products
+    promotion: Promotion class
+        the type of promotion that would be applied to the final price
     active: bool
         indicates if the product is active or not
     """
@@ -39,6 +41,7 @@ class Product:
         self.name = name
         self.price = price
         self.quantity = quantity
+        self.promotion = None
         self.active = True
         if self.quantity == 0:
             self.deactivate()
@@ -64,6 +67,20 @@ class Product:
         if self.quantity == 0:
             self.deactivate()
 
+    def get_promotion(self):
+        """
+        Returns promotion of the product.
+        """
+        if self.promotion:
+            return self.promotion.name
+        return None
+
+    def set_promotion(self, promotion):
+        """
+        Sets promotion.
+        """
+        self.promotion = promotion
+
     def is_active(self):
         """
         Returns value of parameter active of the product.
@@ -86,12 +103,14 @@ class Product:
         """
         Prints a string that represents the product
         """
-        print(f"{self.name}, Price: ${self.price}, Quantity: {self.quantity}")
+        print(f"{self.name}, Price: ${self.price}, Quantity: {self.quantity}, Promotion: {self.get_promotion()}")
 
     def buy(self, purchase_quantity):
         """
         Buys a given quantity of the product.
-        Returns the total price (float) of the purchase.
+        Returns the total price (float) of the purchase, if the product is
+            affected by a promotion, the promotion is discounted from the
+            final price
         Updates the quantity of the product.
 
         Parameters
@@ -109,15 +128,16 @@ class Product:
             raise ValueError("The quantity should be a positive amount.")
         if not self.active:
             raise ValueError("The product is not available.")
-        purchase_price = purchase_quantity * self.price
         new_quantity = self.quantity - purchase_quantity
         if new_quantity < 0:
             raise ValueError("Error while making order! Quantity larger than what exists.")
         self.set_quantity(new_quantity)
-        return purchase_price
+        if self.promotion:
+            return self.promotion.apply_promotion(self, purchase_quantity)
+        return purchase_quantity * self.price
 
 
-class NonStockedProduct (Product):
+class NonStockedProduct(Product):
     """
     A child class from the class Product.
     It is used to represent a product that has unlimited availability.
@@ -135,6 +155,7 @@ class NonStockedProduct (Product):
         Constructs a NonStockedProduct object.
         Creates the instance variables (active is set to True).
         Quantity is set to zero.
+
         Parameters
         ----------
         name : str
@@ -149,7 +170,7 @@ class NonStockedProduct (Product):
         """
         Prints a string that represents the product
         """
-        print(f"{self.name}, Price: ${self.price}, Quantity: Unlimited")
+        print(f"{self.name}, Price: ${self.price}, Quantity: Unlimited, Promotion: {self.get_promotion()}")
 
     def buy(self, purchase_quantity):
         """
@@ -162,11 +183,12 @@ class NonStockedProduct (Product):
             raise ValueError("The quantity should be a positive amount.")
         if not self.active:
             raise ValueError("The product is not available.")
-        purchase_price = purchase_quantity * self.price
-        return purchase_price
+        if self.promotion:
+            return self.promotion.apply_promotion(self, purchase_quantity)
+        return purchase_quantity * self.price
 
 
-class LimitedProduct (Product):
+class LimitedProduct(Product):
     """
     A child class from the class Product.
     It is used to represent a product that can only be purchased a maximum
@@ -201,7 +223,7 @@ class LimitedProduct (Product):
         """
         Prints a string that represents the product
         """
-        print(f"{self.name}, Price: ${self.price}, Limited to 1 per order!")
+        print(f"{self.name}, Price: ${self.price}, Limited to 1 per order!, Promotion: {self.get_promotion()}")
 
     def buy(self, purchase_quantity):
         """
