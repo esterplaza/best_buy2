@@ -26,7 +26,7 @@ def test_when_product_reaches_0_quantity_result_inactive():
 def test_buy():
     test_product = Product("test_name", price=1450, quantity=100)
     test_product.buy(50)
-    assert test_product.get_quantity() == 50
+    assert test_product.quantity == 50
 
 
 def test_buy_larger_quantity_result_exception():

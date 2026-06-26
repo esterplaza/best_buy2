@@ -28,16 +28,7 @@ class Product:
             the number of available products
         quantity : int
             the number of available products
-
-        Raises
-        ----------
-        ValueError
-            If something is invalid (empty name / negative price or quantity)
         """
-        if name == "":
-            raise ValueError("Invalid name, name should not be empty!")
-        if price < 0 or quantity < 0:
-            raise ValueError("Invalid value, negative values are not allowed!")
         self.name = name
         self.price = price
         self.quantity = quantity
@@ -46,13 +37,67 @@ class Product:
         if self.quantity == 0:
             self.deactivate()
 
-    def get_quantity(self):
+    @property
+    def name(self):
+        """
+       Returns the name of the product.
+       """
+        return self._name
+
+    @name.setter
+    def name(self, new_name):
+        """
+        Sets name. If new name is empty it raises a ValueError.
+
+        Parameters
+        ----------
+        new_name : str
+            the name of the product
+
+        Raises
+        ----------
+        ValueError
+            If new name is empty
+        """
+        if new_name == "":
+            raise ValueError("Invalid name, name should not be empty!")
+        self._name = new_name
+
+    @property
+    def price(self):
+        """
+        Returns the price of the product.
+        """
+        return self._price
+
+    @price.setter
+    def price(self, value):
+        """
+        Sets price. If price is negative raises a ValueError.
+
+        Parameters
+        ----------
+        value : int
+            the price of the product
+
+        Raises
+        ----------
+        ValueError
+            If value is negative
+        """
+        if value < 0:
+            raise ValueError("Invalid value, negative values are not allowed!")
+        self._price = value
+
+    @property
+    def quantity(self):
         """
         Returns quantity of the product.
         """
-        return self.quantity
+        return self._quantity
 
-    def set_quantity(self, quantity):
+    @quantity.setter
+    def quantity(self, quantity):
         """
         Sets quantity. If quantity reaches 0, deactivates the product.
 
@@ -60,26 +105,37 @@ class Product:
         ----------
         quantity : int
             the number of available products
+        Raises
+        ----------
+        ValueError
+            If negative quantity
         """
         if quantity < 0:
-            raise ValueError("Quantity cannot be negative.")
-        self.quantity = quantity
-        if self.quantity == 0:
+            raise ValueError("Invalid value, negative values are not allowed!")
+        self._quantity = quantity
+        if self._quantity == 0:
             self.deactivate()
 
-    def get_promotion(self):
+    @property
+    def promotion(self):
         """
         Returns promotion of the product.
         """
-        if self.promotion:
-            return self.promotion.name
+        if self._promotion:
+            return self._promotion
         return None
 
-    def set_promotion(self, promotion):
+    @promotion.setter
+    def promotion(self, promotion):
         """
         Sets promotion.
+
+        Parameters
+        ----------
+        promotion : class Promotion
+            the number of available products
         """
-        self.promotion = promotion
+        self._promotion = promotion
 
     def is_active(self):
         """
@@ -99,11 +155,12 @@ class Product:
         """
         self.active = False
 
-    def show(self):
+    def __str__(self):
         """
-        Prints a string that represents the product
+        Returns a string that represents the product
         """
-        print(f"{self.name}, Price: ${self.price}, Quantity: {self.quantity}, Promotion: {self.get_promotion()}")
+        promotion_name = self.promotion.name if self.promotion else "None"
+        return f"{self.name}, Price: ${self.price}, Quantity: {self.quantity}, Promotion: {promotion_name}"
 
     def buy(self, purchase_quantity):
         """
@@ -131,10 +188,46 @@ class Product:
         new_quantity = self.quantity - purchase_quantity
         if new_quantity < 0:
             raise ValueError("Error while making order! Quantity larger than what exists.")
-        self.set_quantity(new_quantity)
+        self.quantity = new_quantity
         if self.promotion:
             return self.promotion.apply_promotion(self, purchase_quantity)
         return purchase_quantity * self.price
+
+    def __lt__(self, other):
+        """
+        Returns True if the price of the product is less than the price
+        of the other product and False in other situation.
+        """
+        return self.price < other.price
+
+    def __gt__(self, other):
+        """
+        Returns True if the price of the product is greater than the price
+        of the other product and False in other situation.
+        """
+        return self.price > other.price
+
+    def __eq__(self, other):
+        """
+        Returns True if the Product is exactly the same as the other product.
+        (same attributes)
+        """
+        if not isinstance(other, Product):
+            return NotImplemented
+        return (
+                self.name == other.name
+                and self.price == other.price
+                and self.promotion == other.promotion
+                and type(self) is type(other)
+            )
+
+    def copy(self):
+        """
+        It returns a copy of the product
+        """
+        new_product = Product(self.name, self.price, self.quantity)
+        new_product.promotion = self.promotion
+        return new_product
 
 
 class NonStockedProduct(Product):
@@ -166,11 +259,12 @@ class NonStockedProduct(Product):
         super().__init__(name, price, quantity=0)
         self.activate()
 
-    def show(self):
+    def __str__(self):
         """
-        Prints a string that represents the product
+        Returns a string that represents the product
         """
-        print(f"{self.name}, Price: ${self.price}, Quantity: Unlimited, Promotion: {self.get_promotion()}")
+        promotion_name = self.promotion.name if self.promotion else "None"
+        return f"{self.name}, Price: ${self.price}, Quantity: Unlimited, Promotion: {promotion_name}"
 
     def buy(self, purchase_quantity):
         """
@@ -186,6 +280,14 @@ class NonStockedProduct(Product):
         if self.promotion:
             return self.promotion.apply_promotion(self, purchase_quantity)
         return purchase_quantity * self.price
+
+    def copy(self):
+        """
+        It returns a copy of the product
+        """
+        new_product = NonStockedProduct(self.name, self.price)
+        new_product.promotion = self.promotion
+        return new_product
 
 
 class LimitedProduct(Product):
@@ -219,11 +321,12 @@ class LimitedProduct(Product):
         if maximum <= 0:
             raise ValueError("Maximum must be positive.")
 
-    def show(self):
+    def __str__(self):
         """
-        Prints a string that represents the product
+        Returns a string that represents the product
         """
-        print(f"{self.name}, Price: ${self.price}, Limited to 1 per order!, Promotion: {self.get_promotion()}")
+        promotion_name = self.promotion.name if self.promotion else "None"
+        return f"{self.name}, Price: ${self.price}, Limited to {self.maximum} per order!, Promotion: {promotion_name}"
 
     def buy(self, purchase_quantity):
         """
@@ -238,3 +341,25 @@ class LimitedProduct(Product):
         if purchase_quantity > self.maximum:
             raise ValueError(f"Only {self.maximum} is allowed from this product: {self.name}!")
         return super().buy(purchase_quantity)
+
+    def __eq__(self, other):
+        """
+        Returns True if the Product is exactly the same as the other product.
+        (same attributes)
+        """
+        if super().__eq__(other):
+            return self.maximum == other.maximum
+        return False
+
+    def copy(self):
+        """
+        It returns a copy of the product
+        """
+        new_product = LimitedProduct(
+            self.name,
+            self.price,
+            self.quantity,
+            self.maximum
+        )
+        new_product.promotion = self.promotion
+        return new_product

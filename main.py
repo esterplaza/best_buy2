@@ -30,7 +30,7 @@ def list_products_store(products_in_store):
     print("------")
     for product in available_products:
         print(f"{num}.", end=" ")
-        product.show()
+        print(product)
         num += 1
     print("------")
 
@@ -163,11 +163,37 @@ def main():
     thirty_percent = promotions.PercentDiscount("30% off!", percent=30)
 
     # Add promotions to products
-    product_list[0].set_promotion(second_half_price)
-    product_list[1].set_promotion(third_one_free)
-    product_list[3].set_promotion(thirty_percent)
+    product_list[0].promotion = second_half_price
+    product_list[1].promotion = third_one_free
+    product_list[3].promotion = thirty_percent
 
+    """
+    ## Test features ##
+    
+    # setup initial stock of inventory
+    mac = products.Product("MacBook Air M2", price=1450, quantity=100)
+    bose = products.Product("Bose QuietComfort Earbuds", price=250, quantity=500)
+    pixel = products.LimitedProduct("Google Pixel 7", price=500, quantity=250, maximum=1)
+
+    mac.promotion = second_half_price
+
+    best_buy2 = store.Store([mac, bose])
+    #mac.price = -100  # Should give error
+    print(mac)  # Should print `MacBook Air M2, Price: $1450 Quantity:100`
+    print(mac > bose)  # Should print True
+    print(mac in best_buy2)  # Should print True
+    print(pixel in best_buy2)  # Should print False
+    """
     best_buy = store.Store(product_list)
+    """
+    print(mac in best_buy)
+    
+    ## Test combine two stores ##
+    combined_store = best_buy + best_buy2
+    for product in combined_store.list_of_products:
+        print(product)
+    """
+
     start(best_buy)
 
 
